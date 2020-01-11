@@ -1,0 +1,19 @@
+package io.huffmanCoding;
+
+public class Decoded {
+    final private String compressedData;
+    final Node root;
+
+    public Decoded(String compressedData, Node root) {
+        this.compressedData = compressedData;
+        this.root = root;
+    }
+
+    public String getCompressedData() {
+        return compressedData;
+    }
+
+    public Node getRoot() {
+        return root;
+    }
+}
