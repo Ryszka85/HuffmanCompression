@@ -1,0 +1,42 @@
+package io.huffmanCoding;
+
+public class Node implements Comparable<Node>{
+    private final char character;
+    private final int frequency;
+    private final Node leftChild;
+    private final Node rightChild;
+
+    public Node(char character, int frequency, Node leftChild, Node rightChild) {
+        this.character = character;
+        this.frequency = frequency;
+        this.leftChild = leftChild;
+        this.rightChild = rightChild;
+    }
+
+    public boolean isLeaf() {
+        return this.leftChild == null && this.rightChild == null;
+    }
+
+    public char getCharacter() {
+        return character;
+    }
+
+    public Node getLeftChild() {
+        return leftChild;
+    }
+
+    public Node getRightChild() {
+        return rightChild;
+    }
+
+    public int getFrequency() {
+        return frequency;
+    }
+
+    @Override
+    public int compareTo(Node that) {
+        final int freqComparison = Integer.compare(this.frequency, that.frequency);
+        if (freqComparison != 0) return freqComparison;
+        return Integer.compare(this.character, that.character);
+    }
+}
