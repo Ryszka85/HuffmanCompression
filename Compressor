@@ -1,0 +1,80 @@
+package io.huffmanCoding;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.stream.IntStream;
+
+public class Compressor {
+
+    private final static int ALPHABET_SIZE = 256;
+
+    public Decoded compress(final String txt) {
+        int[] frequency = getFrequency(txt);
+        Node root =  buildTree(frequency);
+        Map<Character, String> referenceTable = referenceTable(root);
+        return new Decoded(generateEncodedData(txt, referenceTable), root);
+    }
+
+    public String decompress(Decoded compressed) {
+        Node current = compressed.getRoot();
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < compressed.getCompressedData().length()) {
+            while (!current.isLeaf()) {
+                int bit = compressed.getCompressedData().charAt(i);
+                if (bit == '0') current = current.getLeftChild();
+                else if (bit == '1') current = current.getRightChild();
+                else throw new IllegalArgumentException("Wrong bit " + bit);
+                i++;
+            }
+            sb.append(current.getCharacter());
+            current = compressed.getRoot();
+        }
+        return sb.toString();
+    }
+
+    private String generateEncodedData(final String txt, final Map<Character, String> table) {
+        StringBuilder sb = new StringBuilder();
+        txt.chars().forEach(character -> sb.append(table.get((char) character)));
+        return sb.toString();
+    }
+
+    private Map<Character, String> referenceTable(Node root) {
+        Map<Character, String> table = new HashMap<>();
+        buildReferenceTableRec(root, "", table);
+        return table;
+    }
+
+    private void buildReferenceTableRec(Node root, String s, Map<Character, String> table) {
+        if (!root.isLeaf()) {
+            buildReferenceTableRec(root.getLeftChild(), s + '0', table);
+            buildReferenceTableRec(root.getRightChild(), s + '1', table);
+        } else table.put(root.getCharacter(), s);
+    }
+
+    private int[] getFrequency(final String txt) {
+        int[] frequency = new int[ALPHABET_SIZE];
+        txt.chars().forEach(character -> frequency[character]++);
+        return frequency;
+    }
+
+    private Node buildTree(final int[] frequency) {
+        PriorityQueue<Node> pQueue = new PriorityQueue<>();
+        fillQueue(frequency, pQueue);
+        while (pQueue.size() > 1) {
+            Node left = pQueue.poll();
+            Node right = pQueue.poll();
+            int frequencySum = left.getFrequency() + right.getFrequency();
+            Node parent = new Node('\0', frequencySum, left, right);
+            pQueue.add(parent);
+        }
+        return pQueue.poll();
+    }
+
+    private void fillQueue(final int[] freq, PriorityQueue<Node> pQ) {
+        IntStream.range(0, ALPHABET_SIZE)
+                .filter(i -> freq[i] > 0)
+                .forEach(i -> pQ.add(new Node((char) i, freq[i], null, null )));
+    }
+}
